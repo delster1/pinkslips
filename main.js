@@ -11,11 +11,13 @@ var config = {
     scene: {
         preload: preload,
         create: create,
+        update: update,
     },
 };
-
 var game = new Phaser.Game(config);
 
+var car;
+var leftpressed;
 function preload() {
     this.load.image('background', 'src/background.png');
     this.load.image('car', 'src/racecar.png');
@@ -24,10 +26,14 @@ function preload() {
 }
 
 function create() {
-    var keyboard = this.keyboard.add;
+    car = this.add.sprite(400, 100, 'car');
+
+    leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+
     this.add.image(400, 300, 'background');
 
-    var leftPressed = input.keyboard;
+    var leftPressed = this.input.keyboard.addKey;
     var particles = this.add.particles('red');
 
     var emitter = particles.createEmitter({
@@ -36,11 +42,26 @@ function create() {
         blendMode: 'ADD',
     });
 
-    var logo = this.physics.add.image(400, 100, 'car');
+    emitter.startFollow(car);
 
-    logo.setVelocity(100, 200);
-    logo.setBounce(1, 1);
-    logo.setCollideWorldBounds(true);
+    const vec = this.physics.velocityFromAngle(car.angle, 1);
 
-    emitter.startFollow(logo);
+    const dx = vec.x * 50;
+    const dy = vec.y * 50;
+}
+
+function update() {
+    const vec = this.physics.velocityFromAngle(car.angle, 1);
+
+    car.x += car.body.velocity.copyFrom(
+        game.physics.arcade.velocityFromAngle(game.global.car.angle, 200)
+    );
+    if (leftKey.isDown) {
+        console.log('left');
+        car.angle -= 1;
+    }
+    if (rightKey.isDown) {
+        console.log('right');
+        car.angle += 1;
+    }
 }
