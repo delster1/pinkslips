@@ -5,7 +5,7 @@ var config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 200 },
+            // gravity: { y: 200 },
         },
     },
     scene: {
@@ -16,24 +16,33 @@ var config = {
 };
 var game = new Phaser.Game(config);
 
+var velx = 1.0;
+var vely = 1.0;
+var acc = 1;
+
 var car;
 var leftpressed;
 function preload() {
     this.load.image('background', 'src/background.png');
     this.load.image('car', 'src/racecar.png');
-    this.load.image('logo', 'assets/sprites/phaser3-logo.png');
-    this.load.image('red', 'assets/particles/red.png');
 }
 
-function create() {
-    car = this.add.sprite(400, 100, 'car');
+const degrees_to_radians = (deg) => (deg * Math.PI) / 180.0;
 
+function create() {
+    this.add.image(400, 300, 'background');
+    // create car
+    car = this.add.sprite(400, 600, 'car');
+
+    car.setScale(0.3);
+    // detect left and right kepress
     leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
     rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+    wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-    this.add.image(400, 300, 'background');
+    this.add.image(400, 150, 'src/background');
 
-    var leftPressed = this.input.keyboard.addKey;
     var particles = this.add.particles('red');
 
     var emitter = particles.createEmitter({
@@ -43,25 +52,28 @@ function create() {
     });
 
     emitter.startFollow(car);
-
-    const vec = this.physics.velocityFromAngle(car.angle, 1);
-
-    const dx = vec.x * 50;
-    const dy = vec.y * 50;
 }
 
 function update() {
-    const vec = this.physics.velocityFromAngle(car.angle, 1);
-
-    car.x += car.body.velocity.copyFrom(
-        game.physics.arcade.velocityFromAngle(game.global.car.angle, 200)
-    );
+    console.log(degrees_to_radians(car.angle));
+    const velx = Math.cos(car.rotation) * acc;
+    const vely = Math.sin(car.rotation) * acc;
     if (leftKey.isDown) {
-        console.log('left');
-        car.angle -= 1;
+        car.angle -= 1 * (acc * 0.7);
     }
     if (rightKey.isDown) {
-        console.log('right');
-        car.angle += 1;
+        car.angle += 1 * (acc * 0.7);
     }
+    if (wKey.isDown) {
+        console.log('w [ressed');
+        acc += 0.1;
+    }
+    if (spaceKey.isDown) {
+        console.log('space pressed');
+        acc -= 0.2;
+    }
+
+    car.x += velx;
+    car.y += vely;
+    // console.log('VEL (x,y): (' + velx + ', ' + vely + ')');
 }
